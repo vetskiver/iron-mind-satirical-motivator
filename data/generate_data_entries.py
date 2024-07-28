@@ -57,5 +57,5 @@ fake_entries = generate_fake_data(10000)
 print(json.dumps(fake_entries[0], indent=2))
 
 # Optionally save to a file
-with open('fake_data.json', 'w') as f:
+with open('daily_activity_logs.json', 'w') as f:
     json.dump(fake_entries, f, indent=2)
