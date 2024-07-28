@@ -1,0 +1,61 @@
+import random
+import json
+
+def generate_fake_data(num_entries):
+    fake_data = []
+    
+    for _ in range(num_entries):
+        entry = {
+            "Steps": random.randint(0, 20000),
+            "Calories burned": random.randint(0, 1500),
+            "Workouts": random.choice(["None", "Light", "Moderate", "Intense"]),
+            "Diet": random.choice(["Junk food", "Balanced", "Healthy", "Vegetarian", "Vegan"]),
+            "Sleep": random.randint(0, 15),
+            "Water Intake": random.uniform(0, 5),
+            "Mood": random.randint(1, 10),
+            "Social Interactions": random.choice(["None", "Few", "Many"]),
+            "Screen Time": random.randint(0, 12),
+            "Relaxation": random.choice(["None", "1-3 hours", "3+ hours"]),
+            "Work/Study": f"{random.randint(0, 12)} hours, {random.choice(['Unproductive', 'Neutral', 'Productive', 'Highly Productive'])}",
+            "Interesting Events": random.choice([
+                "Nothing special",
+                "Got a promotion at work",
+                "Had a heated argument with a friend",
+                "Lost a significant amount of money in the stock market",
+                "Won first place in a local competition",
+                "Had an unforgettable time at a wild party",
+                "Faced a personal loss, like the death of a pet",
+                "Caught my partner cheating",
+                "Found out a friend betrayed me",
+                "Saved someone's life",
+                "Got into a car accident, but I'm okay",
+                "Lost my job unexpectedly",
+                "Had a health scare",
+                "Started a new business venture",
+                "Made a life-changing decision to move to another city",
+                "Had a public embarrassment",
+                "Reconnected with a long-lost relative",
+                "Experienced a natural disaster",
+                "Witnessed a crime",
+                "Got engaged",
+                "Discovered a hidden talent",
+                "Became a viral sensation online",
+                "Had a deep existential crisis",
+                "Completed a marathon",
+                "Helped a stranger in need",
+                "Had a breakthrough in therapy"
+            ])
+        }
+        fake_data.append(entry)
+    
+    return fake_data
+
+# Generate 100 fake entries
+fake_entries = generate_fake_data(10000)
+
+# Print the first entry to verify
+print(json.dumps(fake_entries[0], indent=2))
+
+# Optionally save to a file
+with open('fake_data.json', 'w') as f:
+    json.dump(fake_entries, f, indent=2)
