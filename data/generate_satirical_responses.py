@@ -1,14 +1,12 @@
 import json
+from transformers import GPT2LMHeadModel, GPT2Tokenizer, Trainer, TrainingArguments, DataCollatorForLanguageModeling
 from datasets import Dataset
-from transformers import GPT2LMHeadModel, GPT2Tokenizer, Trainer, TrainingArguments
 
 # Load the JSON data
-with open('/path/to/your/daily_activity_logs.json', 'r') as file:
+with open('/Users/alirezaghasemi/Desktop/iron-mind-satirical-motivator/daily_activity_logs.json', 'r') as file:
     data_entries = json.load(file)
 
-# Convert the data into a list of strings suitable for GPT-2 fine-tuning
-data_strings = []
-
+# Prepare the base prompt
 base_prompt = """
 Generate a satirical, motivational, and humorous response in the style of David Goggins and Andrew Tate, 
 based on the user's daily activity log. Address Physical Health, Mental Health, Work/Study, and Interesting 
@@ -19,7 +17,7 @@ Physical Health
 - Calories Burned: Compliment or mock based on calories burned.
 - Workouts: Praise intensity or mock laziness.
 - Diet: Critique humorously.
-- Sleep: Comment on sleep duration with humor.
+- Sleep: Comment on sleep duration with hmor.
 - Water Intake: Mock or praise based on intake.
 
 Mental Health
@@ -37,7 +35,8 @@ Interesting Events
 Keep the tone satirical, brash, and cohesive.
 """
 
-# Combine base_prompt with each entry to create training data
+# Combine base_prompt with each entry to create the training data
+data_strings = []
 for entry in data_entries:
     entry_str = f"{base_prompt}\nUser Input:\n"
     for key, value in entry.items():
@@ -51,6 +50,10 @@ dataset = Dataset.from_dict({"text": data_strings})
 # Load the pre-trained GPT-2 model and tokenizer
 model_name = "distilgpt2"
 tokenizer = GPT2Tokenizer.from_pretrained(model_name)
+
+# Add padding token to the tokenizer
+tokenizer.pad_token = tokenizer.eos_token
+
 model = GPT2LMHeadModel.from_pretrained(model_name)
 
 # Tokenize the dataset
@@ -59,18 +62,21 @@ def tokenize_function(examples):
 
 tokenized_datasets = dataset.map(tokenize_function, batched=True, remove_columns=["text"])
 
+# Data collator
+data_collator = DataCollatorForLanguageModeling(tokenizer=tokenizer, mlm=False)
+
 # Set training arguments
 training_args = TrainingArguments(
     output_dir="./results",
-    evaluation_strategy="epoch",
+    evaluation_strategy="no",
     learning_rate=5e-5,
     per_device_train_batch_size=1,
-    per_device_eval_batch_size=1,
-    num_train_epochs=3,
+    num_train_epochs=3,  # Adjust the number of epochs based on your dataset size and computational resources
     weight_decay=0.01,
-    fp16=True,  # Use mixed precision training for faster training if available
-    logging_dir='./logs',  # Directory for storing logs
+    logging_dir='./logs',
     logging_steps=10,
+    save_steps=10_000,  # Adjust this based on your dataset size
+    save_total_limit=2,  # Limit the total number of checkpoints
 )
 
 # Create a Trainer instance
@@ -78,7 +84,7 @@ trainer = Trainer(
     model=model,
     args=training_args,
     train_dataset=tokenized_datasets,
-    eval_dataset=tokenized_datasets,  # For simplicity, using the same data for evaluation
+    data_collator=data_collator,
 )
 
 # Fine-tune the model
